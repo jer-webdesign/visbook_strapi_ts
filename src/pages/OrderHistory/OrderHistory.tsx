@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { getFirestore, collection, query, where, getDocs } from "firebase/firestore";
 import { app } from "../../firebase";
 import "./OrderHistory.css";
+import { Order } from "../../types";
 
 export default function OrderHistory() {
   const { currentUser, userProfile } = useAuth();
-  const [orders, setOrders] = useState([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const db = getFirestore(app);
 
   useEffect(() => {
@@ -14,13 +15,33 @@ export default function OrderHistory() {
     const fetchOrders = async () => {
       const q = query(collection(db, "orders"), where("userId", "==", currentUser.uid));
       const querySnapshot = await getDocs(q);
-      setOrders(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      const ordersArr = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
+      // Sort orders from latest to oldest by createdAt timestamp
+      ordersArr.sort((a, b) => {
+        const aTime = a.createdAt && a.createdAt.seconds ? a.createdAt.seconds : 0;
+        const bTime = b.createdAt && b.createdAt.seconds ? b.createdAt.seconds : 0;
+        return bTime - aTime;
+      });
+      setOrders(ordersArr);
     };
     fetchOrders();
+    // Listen for orderHistoryUpdated event to refresh orders after payment
+    const handleOrderHistoryUpdated = () => {
+      fetchOrders();
+    };
+    window.addEventListener('orderHistoryUpdated', handleOrderHistoryUpdated);
+    return () => {
+      window.removeEventListener('orderHistoryUpdated', handleOrderHistoryUpdated);
+    };
   }, [currentUser, db]);
 
   return (
     <div className="order-history-container">
+      <nav className="breadcrumb-nav">
+        <a href="/visbook_strapi/dashboard" className="breadcrumb-link">Your Account</a>
+        <span className="breadcrumb-separator">&gt;</span>
+        <span className="breadcrumb-current">Your Orders</span>
+      </nav>
       <h2>Your Order History</h2>
       {orders.length === 0 ? (
         <p className="order-history-empty">No orders found.</p>

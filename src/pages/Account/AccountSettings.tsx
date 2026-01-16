@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import "./AccountSettings.css";
@@ -30,12 +29,12 @@ export default function AccountSettings() {
       if (formData.displayName !== userProfile?.displayName || formData.homeAddress !== userProfile?.homeAddress) {
         await updateUserProfile({ displayName: formData.displayName, homeAddress: formData.homeAddress });
       }
-      if (formData.email !== currentUser.email) {
+      if (currentUser && formData.email !== currentUser.email) {
         await updateUserEmail(formData.email);
       }
       setMessage("Profile updated successfully!");
     } catch (error) {
-      setError("Failed to update profile: " + error.message);
+      setError("Failed to update profile: " + (error instanceof Error ? error.message : "Unknown error"));
     } finally {
       setLoading(false);
     }
@@ -59,7 +58,7 @@ export default function AccountSettings() {
       setMessage("Password updated successfully!");
       setFormData({ ...formData, currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (error) {
-      setError("Failed to update password: " + error.message);
+      setError("Failed to update password: " + (error instanceof Error ? error.message : "Unknown error"));
     } finally {
       setLoading(false);
     }
@@ -79,6 +78,11 @@ export default function AccountSettings() {
 
   return (
     <div className="account-settings">
+      <nav className="breadcrumb-nav">
+        <a href="/visbook_strapi/dashboard" className="breadcrumb-link">Your Account</a>
+        <span className="breadcrumb-separator">&gt;</span>
+        <span className="breadcrumb-current">Account Settings</span>
+      </nav>
       <h2>Account Settings</h2>
       {message && <div className="success-message">{message}</div>}
       {error && <div className="error-message">{error}</div>}

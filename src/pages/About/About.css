@@ -1,8 +1,8 @@
 /* About section */
 .about {
-  padding: 6rem 2rem;
   max-width: 100%;
-  margin: 0 auto;
+  margin: 4rem 2.5rem 1rem 5rem;
+  padding: 0;
   color: rgb(9, 92, 104);
 }
 
@@ -10,7 +10,7 @@
   display: flex;
   align-items: flex-start;
   gap: 5rem;
-  padding: 2rem;
+  padding: 2rem 2rem 1.4rem 2rem;
   flex-wrap: wrap;
 }
 
@@ -22,13 +22,14 @@
 
 .about-text {
   flex: 1;
+  /* margin-right: 2rem; */
 }
 
 .about-text h2 {
   text-align: left;
   margin: 0;
   padding-top: 0;
-  padding-bottom: 50px;
+  padding-bottom: 2rem;
   font-size: 1.75rem;
 }
 

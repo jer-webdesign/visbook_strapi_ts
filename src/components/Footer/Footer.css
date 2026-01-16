@@ -1,3 +1,88 @@
+/* Horizontal alignment for About, Quick Links, and Contact */
+.footer-main-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  gap: 20px;
+}
+
+/* Shared section styles for all footer sections */
+.footer-section {
+  margin-bottom: 25px;
+  padding: 0 10px;
+  flex: 1 1 200px;
+  min-width: 180px;
+  box-sizing: border-box;
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+/* About Us */
+.footer-section.about {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 0 5rem 0 5rem;
+  max-width: 50%;
+  margin: 0;
+  color: rgb(9, 92, 104);
+}
+
+/* About Us */
+.footer-section.about h3 {
+  color: #46d0ef;
+  font-size: 18px;
+  margin-bottom: 10px;
+  text-align: left;
+}
+.footer-section.about p {
+  color: #ccc;
+  font-size: 14px;
+  text-align: left;
+}
+
+/* Quick Links */
+.footer-section.quick-links h3 {
+  color: #46d0ef;
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+.footer-section.quick-links ul {
+  list-style: none;
+  padding: 0;
+}
+/* .footer-section.quick-links li {
+  margin-bottom: 6px;
+} */
+.footer-section.quick-links a {
+  color: #fff;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.footer-section.quick-links a:hover {
+  color: #46d0ef;
+}
+
+/* Address */
+.footer-section.address h3 {
+  color: #46d0ef;
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+.footer-section.address p {
+  color: #ccc;
+  font-size: 14px;
+}
+
 /*
   Footer Styles
   --------------
@@ -29,22 +114,73 @@
 
 
 /* Bottom copyright/info bar */
+.footer {
+  position: relative;
+}
+
 .footer-bottom {
-  text-align: center;
-  margin-top: 30px;
-  border-top: 1px solid #000000; /* visual separation */
-  padding-top: 15px;
+  position: absolute;
+  right: 30px;
+  bottom: 10px;
+  margin: 0;
+  border-top: none;
+  padding-top: 0;
   font-size: 12px;
   color: #aaa;
+  background: transparent;
+  text-align: right;
+}
+
+@media (max-width: 900px) {
+  .footer-bottom {
+    position: static;
+    text-align: center;
+    margin-top: 30px;
+    border-top: 1px solid #000000;
+    padding-top: 15px;
+    right: unset;
+    bottom: unset;
+  }
 }
 
 /*
   Responsive tweaks for mobile:
   On small screens, center the contact info and add some space above it.
 */
+@media (max-width: 900px) {
+  .footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+  }
+  .footer-main-row {
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+  .footer-section {
+    margin-bottom: 20px;
+    min-width: unset;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .footer-section.about {
+    padding-left: 0;
+    padding-right: 0;
+    padding-bottom: 3rem;
+    max-width: 35%;
+  }
+}
+
 @media (max-width: 600px) {
+  .footer-section {
+    text-align: center;
+  }
   .footer-section.contact {
     margin-top: 20px;
-    text-align: center; /* looks better on mobile */
+  }
+  .footer-section.about {
+    max-width: 50%;
   }
 }

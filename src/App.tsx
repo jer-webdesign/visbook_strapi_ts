@@ -15,6 +15,7 @@ import Contact from './pages/Contact/Contact';
 import SignIn from './pages/SignIn/SignIn';
 import SignUp from './pages/SignUp/SignUp';
 import Cart from './pages/Cart/Cart';
+import YourAccount from './pages/Dashboard/YourAccount';
 import AccountSettings from './pages/Account/AccountSettings';
 import OrderHistory from './pages/OrderHistory/OrderHistory';
 import PaymentCompleted from './pages/Payment/PaymentCompleted';
@@ -42,7 +43,8 @@ export default function App() {
           <Route path="/signup" element={<SignUp />} />
           {/* Shopping cart and user account routes */}
           <Route path="/cart" element={<Cart />} />
-          <Route path="/account" element={<AccountSettings />} />
+          <Route path="/dashboard" element={<YourAccount />} />    
+          <Route path="/account" element={<AccountSettings />} /> 
           <Route path="/account/orders" element={<OrderHistory />} />
           {/* Payment workflow routes */}
           <Route path="/payment" element={<Payment />} />

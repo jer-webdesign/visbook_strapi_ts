@@ -1,4 +1,4 @@
-// SignIn.jsx - Updated with Firebase Auth
+// SignIn.tsx - Updated with Firebase Auth
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
@@ -39,7 +39,7 @@ export default function SignIn() {
         return;
       }
       navigate("/"); // Redirect to home page after successful login
-    } catch (error) {
+    } catch (error: any) {
       console.error("Sign error:", error);
       setError(getErrorMessage(error.code));
     } finally {
@@ -53,7 +53,7 @@ export default function SignIn() {
       setLoading(true);
       await signInWithGoogle();
       navigate("/");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Google sign-in error:", error);
       setError(getErrorMessage(error.code));
     } finally {

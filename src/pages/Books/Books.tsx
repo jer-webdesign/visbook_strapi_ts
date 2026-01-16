@@ -4,15 +4,19 @@ import "../../components/Modal/Modal.css";
 import { useNavigate } from "react-router-dom";
 import "./Books.css"; // optional styling
 import { useAuth } from "../../context/AuthContext";
+import { getFirestore, doc, setDoc } from "firebase/firestore";
+import { app } from "../../firebase";
+import { Book } from "../../types";
 
 export default function Books() {
-  const [books, setBooks] = useState([]);
+  const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const [modalBook, setModalBook] = useState(null);
+  const [modalBook, setModalBook] = useState<Book | null>(null);
   const navigate = useNavigate();
   const { currentUser } = useAuth();
+  const db = getFirestore(app);
 
   // const STRAPI_URL = "http://localhost:1337"; // Replace with live URL if needed
   const STRAPI_URL = import.meta.env.VITE_STRAPI_URL;
@@ -29,7 +33,7 @@ export default function Books() {
         setBooks(data.data || []);
       } catch (err) {
         console.error("Error fetching books:", err);
-        setError(err.message);
+        setError(err instanceof Error ? err.message : "Unknown error");
         setBooks([]);
       } finally {
         setLoading(false);
@@ -39,16 +43,17 @@ export default function Books() {
     fetchBooks();
   }, []);
 
-  const handleBookClick = (bookID) => {
+  const handleBookClick = (bookID: number | string) => {
     navigate(`/books/${bookID}`);
   };
 
-  const handleAddToCart = (book) => {
+  const handleAddToCart = async (book: Book) => {
     let cartKey = "cart";
-    if (currentUser && currentUser.uid) {
+    let isUser = currentUser && currentUser.uid;
+    if (isUser && currentUser) {
       cartKey = `cart_${currentUser.uid}`;
     }
-    let existingCart = JSON.parse(localStorage.getItem(cartKey)) || [];
+    let existingCart: Book[] = JSON.parse(localStorage.getItem(cartKey) || '[]') || [];
     const itemIndex = existingCart.findIndex(item => item.id === book.id);
     if (itemIndex === -1) {
       // Not in cart, add with quantity 1
@@ -58,6 +63,13 @@ export default function Books() {
       existingCart[itemIndex].quantity = (existingCart[itemIndex].quantity || 1) + 1;
     }
     localStorage.setItem(cartKey, JSON.stringify(existingCart));
+    if (isUser && currentUser) {
+      try {
+        await setDoc(doc(db, "carts", currentUser.uid), { items: existingCart });
+      } catch (e) {
+        // Optionally handle Firestore error
+      }
+    }
     window.dispatchEvent(new Event('cartUpdated'));
     setModalBook(book);
     setModalOpen(true);
@@ -66,7 +78,7 @@ export default function Books() {
   // If loading, show a spinner and message
   if (loading) {
     return (
-      <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '50vh' }}>
+      <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '71.55vh' }}>
         <div className="spinner" style={{ marginBottom: '1.2rem' }}></div>
         <div style={{ color: '#46d0ef', fontSize: '1.12rem', fontWeight: 500, letterSpacing: '0.01em', textAlign: 'center' }}>
           Please wait, loading books…
@@ -106,7 +118,7 @@ export default function Books() {
                     }}
                     onError={(e) => {
                       console.warn("Image failed to load:", cover);
-                      e.target.style.display = "none";
+                      (e.target as HTMLImageElement).style.display = "none";
                     }}
                   />
                 ) : (

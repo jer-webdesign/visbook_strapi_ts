@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { getFirestore, collection, addDoc, Timestamp } from "firebase/firestore";
+import { getFirestore, collection, addDoc, Timestamp, doc, setDoc } from "firebase/firestore";
 import { app } from "../../firebase";
 import { useAuth } from "../../context/AuthContext";
 import { X } from 'lucide-react';
@@ -17,20 +17,33 @@ export default function PaymentCompleted() {
 
   useEffect(() => {
     (async () => {
-      if (currentUser && cartItems.length > 0) {
+      if (cartItems.length > 0) {
         try {
-          await addDoc(collection(db, "orders"), {
-            userId: currentUser.uid,
-            items: cartItems,
-            total: parseFloat(total.toFixed(2)),
-            createdAt: Timestamp.now(),
-            orderNumber,
-            paymentMethod: 'Credit Card',
-          });
-          // Clear cart in localStorage
-          const cartKey = `cart_${currentUser.uid}`;
-          localStorage.removeItem(cartKey);
+          if (currentUser) {
+            await addDoc(collection(db, "orders"), {
+              userId: currentUser.uid,
+              items: cartItems,
+              total: parseFloat(total.toFixed(2)),
+              createdAt: Timestamp.now(),
+              orderNumber,
+              paymentMethod: 'Credit Card',
+            });
+            // Clear user cart in localStorage
+            const cartKey = `cart_${currentUser.uid}`;
+            localStorage.removeItem(cartKey);
+            // Also clear Firestore cart for this user
+            const userCartRef = doc(db, "carts", currentUser.uid);
+            await setDoc(userCartRef, { items: [] }, { merge: true });
+          } else {
+            // Guest: clear guest cart
+            localStorage.removeItem('cart');
+          }
+          // Always reset cart counter and refresh UI
           window.dispatchEvent(new Event('cartUpdated'));
+          // For signed-in users, also trigger order history refresh
+          if (currentUser) {
+            window.dispatchEvent(new Event('orderHistoryUpdated'));
+          }
         } catch (e) {
           // Optionally handle error
         }

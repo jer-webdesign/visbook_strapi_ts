@@ -1,4 +1,4 @@
-// src/pages/Payment/Payment.jsx
+// src/pages/Payment/Payment.tsx
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./Payment.css";

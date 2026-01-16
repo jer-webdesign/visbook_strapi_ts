@@ -1,4 +1,4 @@
-// Home.jsx
+// Home.tsx
 // Import React and key components for the homepage
 import React from "react";
 import NewBooks from "../Books/NewBooks"; // Shows the latest book releases

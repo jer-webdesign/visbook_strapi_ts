@@ -1,4 +1,4 @@
-// SignUp.jsx - Updated with Firebase Auth
+// SignUp.tsx - Updated with Firebase Auth
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
@@ -65,7 +65,7 @@ export default function SignUp() {
       await signup(email, password, displayName);
       setShowVerifyModal(true); // Show modal to prompt email verification
       // navigation will happen after modal closes
-    } catch (error) {
+    } catch (error: any) {
       console.error("Signup error:", error);
       setError(getErrorMessage(error.code));
     } finally {
@@ -80,7 +80,7 @@ export default function SignUp() {
       setLoading(true);
       await signInWithGoogle();
       navigate("/account"); // Redirect to account page after Google sign-in
-    } catch (error) {
+    } catch (error: any) {
       console.error("Google sign-in error:", error);
       setError(getErrorMessage(error.code));
     } finally {

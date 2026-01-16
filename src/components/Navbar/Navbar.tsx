@@ -1,9 +1,11 @@
-// Navbar for VisBook: handles both desktop and mobile navigation, user menu, and cart badge.
-
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from 'react-router-dom';
 import './Navbar.css';
 import { useAuth } from '../../context/AuthContext';
+
+// Get the total cart item count for a user from Firestore.
+import { getFirestore, doc, getDoc } from "firebase/firestore";
+import { app } from "../../firebase";
 
 // Import assets
 import visBookLogo from '/assets/images/vblogo.png';
@@ -13,6 +15,29 @@ import contactIcon from '/assets/images/icons/contact-icon.png';
 import signinIcon from '/assets/images/icons/signin-icon.png';
 import cartIcon from '/assets/images/icons/cart-icon.png';
 
+/**
+ * Get the total cart item count for a user from Firestore.
+ * @param uid - The user's UID
+ * @returns The total quantity of items in the user's cart
+ */
+async function getUserCartCount(uid: string | null): Promise<number> {
+  if (!uid) return 0;
+  const db = getFirestore(app);
+  try {
+    const cartDoc = await getDoc(doc(db, "carts", uid));
+    if (cartDoc.exists()) {
+      const items = cartDoc.data().items || [];
+      // Sum up the quantity of each item (default to 1 if not set)
+      return items.reduce((sum: number, item: any) => sum + (item.quantity || 1), 0);
+    }
+    return 0;
+  } catch (e) {
+    console.error("Error fetching user cart count:", e);
+    return 0;
+  }
+}
+
+
 export default function Navbar() {
   const navigate = useNavigate();
   
@@ -20,36 +45,41 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loadingUser, setLoadingUser] = useState(true);
   const [mobileUserDropdownOpen, setMobileUserDropdownOpen] = useState(false);
   
   // Refs and context
-  const userDropdownRef = useRef(null);
+  const userDropdownRef = useRef<HTMLLIElement>(null);
   const { currentUser, userProfile, signout } = useAuth();
 
-  // Cart count management
+  // Always refresh cart counter and login state immediately when currentUser changes or cart is updated
   useEffect(() => {
     const updateCartCount = () => {
       let cartKey = 'cart';
       if (currentUser && currentUser.uid) {
-        cartKey = `cart_${currentUser.uid}`;
-      }
-      const storedCart = localStorage.getItem(cartKey);
-      if (storedCart) {
-        const cartArr = JSON.parse(storedCart);
-        const total = cartArr.reduce((sum, item) => sum + (item.quantity || 1), 0);
-        setCartCount(total);
+        setIsLoggedIn(true);
+        getUserCartCount(currentUser.uid).then(setCartCount);
       } else {
-        setCartCount(0);
+        setIsLoggedIn(false);
+        // Only show guest cart if it exists and user is not logged in
+        const storedCart = localStorage.getItem(cartKey);
+        if (storedCart) {
+          const cartArr = JSON.parse(storedCart);
+          const total = cartArr.reduce((sum, item) => sum + (item.quantity || 1), 0);
+          setCartCount(total);
+        } else {
+          setCartCount(0);
+        }
       }
     };
-
+    // Always clear guest cart after logout for safety
+    if (!currentUser) {
+      localStorage.removeItem('cart');
+    }
     updateCartCount();
-    window.addEventListener('storage', updateCartCount);
     window.addEventListener('cartUpdated', updateCartCount);
-    
     return () => {
-      window.removeEventListener('storage', updateCartCount);
       window.removeEventListener('cartUpdated', updateCartCount);
     };
   }, [currentUser]);
@@ -86,11 +116,22 @@ export default function Navbar() {
 
   // Event handlers
   const handleLogout = () => {
+    // Extra safety: clear guest cart and all user carts from localStorage
+    localStorage.removeItem('cart');
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith('cart_')) localStorage.removeItem(key);
+    });
+    setCartCount(0); // Force reset immediately
+    setIsLoggedIn(false); // Hide badge immediately
     signout();
-    window.dispatchEvent(new Event('cartUpdated'));
+    // Force all listeners (Cart, Navbar) to refresh and initialize
+    setTimeout(() => {
+      window.dispatchEvent(new Event('cartUpdated'));
+      window.dispatchEvent(new Event('userLoggedOut'));
+      window.location.reload(); // Force browser refresh
+    }, 0);
     setDropdownOpen(false);
     setMenuOpen(false);
-    setTimeout(() => navigate('/signin'), 0);
   };
 
   const handleHamburgerClick = () => {
@@ -159,7 +200,11 @@ export default function Navbar() {
         tabIndex={0}
         style={{ height: '100%', width: '100%', display: 'flex', alignItems: 'center', position: 'relative', zIndex: 2 }}
       >
-        <img src={signinIcon} alt="User" className="nav-icon" />
+        {userProfile?.photoURL ? (
+          <img src={userProfile.photoURL} alt="User" className="nav-icon profile-avatar-img" />
+        ) : (
+          <img src={signinIcon} alt="User" className="nav-icon" />
+        )}
         <span className="nav-label">Hi, {getFirstName()}</span>
         <span className="custom-tooltip">Hi, {getFirstName()}</span>
       </button>
@@ -182,12 +227,10 @@ export default function Navbar() {
         role="menu"
         aria-label="User menu"
       >
-        <Link to="/account" className="dropdown-item" role="menuitem" tabIndex={dropdownOpen ? 0 : -1} onClick={() => setDropdownOpen(false)}>
-          Account Settings
-        </Link>
-        <Link to="/account/orders" className="dropdown-item" role="menuitem" tabIndex={dropdownOpen ? 0 : -1} onClick={() => setDropdownOpen(false)}>
-          Order History
-        </Link>
+      <div className="dropdown-title">
+        <Link to="/dashboard" className="dropdown-item" role="menuitem" tabIndex={dropdownOpen ? 0 : -1} onClick={() => setDropdownOpen(false)}>
+          Your Account
+        </Link>      
         <button className="dropdown-item" role="menuitem" tabIndex={dropdownOpen ? 0 : -1} onMouseDown={e => {
           e.preventDefault();
           setDropdownOpen(false);
@@ -196,24 +239,39 @@ export default function Navbar() {
         }}>
           Log-out
         </button>
+       </div> 
       </div>
     </li>
   );
 
-  const renderCartBadge = () => (
-    <li style={{ position: 'relative' }}>
-      <Link to="/cart" className="icon-link cart-link-badge">
-        <span className="cart-icon-badge-wrapper" style={{ position: 'relative', display: 'inline-block' }}>
-          <img src={cartIcon} alt="Cart" className="nav-icon" />
-          {cartCount > 0 && (
+  const renderCartBadge = () => {
+    // Only show badge if user is logged in or guest cart exists and has items
+    if ((cartCount === 0) || (!isLoggedIn && cartCount === 0)) {
+      return (
+        <li style={{ position: 'relative' }}>
+          <Link to="/cart" className="icon-link cart-link-badge">
+            <span className="cart-icon-badge-wrapper" style={{ position: 'relative', display: 'inline-block' }}>
+              <img src={cartIcon} alt="Cart" className="nav-icon" />
+            </span>
+            <span className="nav-label">Cart</span>
+            <span className="custom-tooltip">Cart</span>
+          </Link>
+        </li>
+      );
+    }
+    return (
+      <li style={{ position: 'relative' }}>
+        <Link to="/cart" className="icon-link cart-link-badge">
+          <span className="cart-icon-badge-wrapper" style={{ position: 'relative', display: 'inline-block' }}>
+            <img src={cartIcon} alt="Cart" className="nav-icon" />
             <span className="cart-badge-overlay">{cartCount}</span>
-          )}
-        </span>
-        <span className="nav-label">Cart</span>
-        <span className="custom-tooltip">Cart</span>
-      </Link>
-    </li>
-  );
+          </span>
+          <span className="nav-label">Cart</span>
+          <span className="custom-tooltip">Cart</span>
+        </Link>
+      </li>
+    );
+  };
 
   const renderMobileNavItem = (to, icon, label, className = '') => (
     <li className={`mobile-main-menu-item mobile-main-menu-${className || label.toLowerCase()}`}>
@@ -237,7 +295,11 @@ export default function Navbar() {
         aria-controls="mobile-user-dropdown-menu"
       >
         <span className="mobile-main-menu-icon mobile-main-menu-user-icon">
-          <img src={signinIcon} alt="User" className="nav-icon mobile-main-menu-img" />
+          {userProfile?.photoURL ? (
+            <img src={userProfile.photoURL} alt="User" className="nav-icon mobile-main-menu-img profile-avatar-img" />
+          ) : (
+            <img src={signinIcon} alt="User" className="nav-icon mobile-main-menu-img" />
+          )}
           Hi, {getFirstName()}
         </span>
         <span className="mobile-main-menu-arrow">&#8594;</span>
@@ -251,9 +313,7 @@ export default function Navbar() {
         <span className="mobile-main-menu-icon">
           <span className="cart-icon-badge-wrapper">
             <img src={cartIcon} alt="Cart" className="nav-icon mobile-main-menu-img" />
-            {cartCount > 0 && (
-              <span className="cart-badge-overlay mobile-main-menu-cart-badge">{cartCount}</span>
-            )}
+            {cartCount > 0 && <span className="cart-badge-overlay mobile-main-menu-cart-badge">{cartCount}</span>}
           </span>
         </span>
         <span className="mobile-main-menu-label">Cart</span>
@@ -281,7 +341,11 @@ export default function Navbar() {
           }}
           style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
         >
-          <img src={signinIcon} alt="User" className="nav-icon mobile-main-menu-img" />
+          {userProfile?.photoURL ? (
+            <img src={userProfile.photoURL} alt="User" className="nav-icon mobile-main-menu-img profile-avatar-img" />
+          ) : (
+            <img src={signinIcon} alt="User" className="nav-icon mobile-main-menu-img" />
+          )}
           Hi, {getFirstName()}
         </span>
       </div>

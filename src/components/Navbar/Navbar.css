@@ -1,3 +1,48 @@
+/* Only affect user-btn icon with hover if not a Google profile picture */
+.user-btn:hover .nav-icon:not(.profile-avatar-img),
+.user-btn:focus .nav-icon:not(.profile-avatar-img) {
+  filter: brightness(0) saturate(100%) invert(1);
+  transform: scale(1.12);
+}
+/* Only the 'Hi' username (nav-label) is affected by hover/focus on user-btn */
+.user-btn:hover .nav-label,
+.user-btn:focus .nav-label {
+  color: #fff;
+  transform: scale(1.05);
+}
+/* Profile avatar image for user (Google) */
+.profile-avatar-img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #19d0ff;
+  background: #000000;
+  box-shadow: 0 1px 4px rgba(25,208,255,0.10);
+}
+/* User dropdown title */
+.dropdown-title {
+  display: block;
+  width: 100%;
+  /* padding: 0.5rem 1.5rem 0.5rem 1.5rem; */
+  background: none;
+  border: none;
+  text-align: left;
+  color: #19d0ff;
+  font-size: 1rem;
+  font-family: inherit;
+  font-weight: 400;
+  cursor: default;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+  /* No border-bottom for the title to match Account Settings alignment */
+}
+.user-dropdown-menu .dropdown-title:hover,
+.user-dropdown-menu .dropdown-title:focus {
+  background: rgba(25,208,255,0.08);
+  /* color: #fff; */
+  outline: none;
+}
 /* Global Styles */
 .app-container {
   display: flex;
@@ -161,8 +206,12 @@
 
 .desktop-nav a:hover .nav-icon,
 .desktop-nav a:focus .nav-icon {
-  filter: brightness(0) saturate(100%) invert(1);
+  /* Only apply filter to nav-icon if not profile-avatar-img */
   transform: scale(1.12);
+}
+.desktop-nav a:hover .nav-icon:not(.profile-avatar-img),
+.desktop-nav a:focus .nav-icon:not(.profile-avatar-img) {
+  filter: brightness(0) saturate(100%) invert(1);
 }
 
 .desktop-nav a .nav-label {
@@ -215,22 +264,8 @@
   transition: color 0.18s, transform 0.18s;
 }
 
-.user-btn:hover,
-.user-btn:focus {
-  color: #fff;
-}
 
-.user-btn:hover .nav-icon,
-.user-btn:focus .nav-icon {
-  filter: brightness(0) saturate(100%) invert(1);
-  transform: scale(1.12);
-}
-
-.user-btn:hover .nav-label,
-.user-btn:focus .nav-label {
-  color: #fff;
-  transform: scale(1.05);
-}
+/* Remove hover/focus effects from .user-btn and its children so it is not affected by hover */
 
 .user-dropdown-menu {
   position: absolute;

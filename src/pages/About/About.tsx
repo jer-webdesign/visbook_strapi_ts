@@ -14,7 +14,7 @@ export default function About() {
             {/* Hero image for the about page */}
             <img src={visbookAbout} alt="About VisBook" className="about-visbook"/>
             <div className="about-text">
-              <h2>ABOUT</h2>
+              <h2>About</h2>
               {/* Project description */}
               <p>
                 <b>VisBook</b> is a visual graphics online bookstore designed to inspire and educate creatives through expertly curated e-books. Specializing in topics like 3D modeling, animation, visual storytelling, and digital design, VisBook serves as a hub for beginners and intermediate artists eager to master the tools of modern visual creation.

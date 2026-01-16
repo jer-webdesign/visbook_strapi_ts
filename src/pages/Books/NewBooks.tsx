@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import "./NewBooks.css";
 import Modal from "../../components/Modal/Modal";
 import "../../components/Modal/Modal.css";
+import { Book } from "../../types";
 
 export default function NewBooks() {
   const { currentUser } = useAuth();
@@ -12,11 +13,11 @@ export default function NewBooks() {
   const navigate = useNavigate();
   const scrollByAmount = 236;
 
-  const [books, setBooks] = useState([]);
+  const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const [modalBook, setModalBook] = useState(null);
+  const [modalBook, setModalBook] = useState<Book | null>(null);
 
   const STRAPI_URL = import.meta.env.VITE_STRAPI_URL;
   const STRAPI_MEDIA_URL = import.meta.env.VITE_STRAPI_MEDIA_URL;
@@ -24,7 +25,8 @@ export default function NewBooks() {
     const fetchBooks = async () => {
       try {
         setLoading(true);  
-        const res = await fetch(`${STRAPI_URL}/api/books?populate=*`);        
+        //const res = await fetch(`${STRAPI_URL}/api/books?populate=*`);     
+        const res = await fetch(`${STRAPI_URL}/api/books?pagination[page]=1&pagination[pageSize]=30`);               
         if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
         const data = await res.json();
         console.log("Fetched data:", data);
@@ -34,7 +36,7 @@ export default function NewBooks() {
           setError("Unexpected data structure from API");
         }
       } catch (error) {
-        setError(error.message);
+        setError(error instanceof Error ? error.message : "Unknown error");
       } finally {
         setLoading(false);
       }
@@ -42,16 +44,16 @@ export default function NewBooks() {
     fetchBooks();
   }, [STRAPI_URL]);
 
-  const handleBookClick = (bookID) => {
+  const handleBookClick = (bookID: number | string) => {
     navigate(`/books/${bookID}`);
   };
 
-  const handleAddToCart = (book) => {
+  const handleAddToCart = (book: Book) => {
     let cartKey = "cart";
     if (currentUser && currentUser.uid) {
       cartKey = `cart_${currentUser.uid}`;
     }
-    const existingCart = JSON.parse(localStorage.getItem(cartKey)) || [];
+    const existingCart: Book[] = JSON.parse(localStorage.getItem(cartKey) || '[]') || [];
     const itemIndex = existingCart.findIndex(item => item.id === book.id);
     if (itemIndex === -1) {
       existingCart.push({ ...book, quantity: 1 });
@@ -266,11 +268,11 @@ export default function NewBooks() {
 
   if (loading) {
     return (
-      <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '50vh' }}>
-        <div className="spinner" style={{ marginBottom: '1.2rem' }}></div>
+      <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '42vh' }}>
+        <div className="spinner" style={{ marginBottom: '0rem' }}></div>
         <div style={{ color: '#46d0ef', fontSize: '1.12rem', fontWeight: 500, letterSpacing: '0.01em', textAlign: 'center' }}>
           Please wait, loading books...
-        </div>
+         </div> 
       </main>
     );
   }

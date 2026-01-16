@@ -1,24 +1,25 @@
-// src/components/BookDetail.jsx
+// src/pages/Books/BookDetail.tsx
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import "./BookDetail.css";
+import { Book } from "../../types";
 
 export default function BookDetail() {
-  const { bookID } = useParams();
-  const [book, setBook] = useState(null);
-  const [error, setError] = useState(null);
+  const { bookID } = useParams<{ bookID: string }>();
+  const [book, setBook] = useState<Book | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchBook = async () => {
       try {
         const STRAPI_URL = import.meta.env.VITE_STRAPI_URL;
-        const res = await fetch(`${STRAPI_URL}/api/books?populate=*`);
+        const res = await fetch(`${STRAPI_URL}/api/books?pagination[page]=1&pagination[pageSize]=30`);
         // const res = await fetch("http://localhost:1337/api/books?populate=*");
         if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
         const data = await res.json();
 
         // Find the correct book by ID
-        const foundBook = data.data.find((b) => String(b.id) === bookID);
+        const foundBook = data.data.find((b: Book) => String(b.id) === bookID);
         if (foundBook) {
           setBook(foundBook);
         } else {
@@ -26,7 +27,7 @@ export default function BookDetail() {
         }
       } catch (err) {
         console.error("Error fetching book:", err);
-        setError(err.message);
+        setError(err instanceof Error ? err.message : "Unknown error");
       }
     };
 

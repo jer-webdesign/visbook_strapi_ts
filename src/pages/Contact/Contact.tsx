@@ -1,4 +1,4 @@
-// Contact.jsx
+// Contact.tsx
 import React, { useState } from 'react';
 import './Contact.css'; 
 import { getFirestore, collection, addDoc, Timestamp } from "firebase/firestore";
@@ -95,7 +95,7 @@ export default function Contact() {
         <textarea
           name="message"
           placeholder="Your Message"
-          rows="5"
+          rows={5}
           value={formData.message}
           onChange={handleChange}
         ></textarea>

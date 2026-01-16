@@ -1,9 +1,15 @@
-import React from "react";
+import React, { ReactNode } from "react";
 import "./Modal.css";
+
+interface ModalProps {
+  open: boolean;
+  onClose: () => void;
+  children: ReactNode;
+}
 
 // Simple modal component for dialogs/popups
 // Usage: <Modal open={true} onClose={fn}>...</Modal>
-export default function Modal({ open, onClose, children }) {
+export default function Modal({ open, onClose, children }: ModalProps) {
   // Don't render anything if the modal isn't open
   if (!open) return null;
 
