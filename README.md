@@ -1,7 +1,7 @@
 # Visbook - Responsive Online Visual Graphics Bookstore Documentation
 
 ## 1. Brief Description
-Visbook is a modern, responsive online bookstore developed to showcase and sell visual graphics books. The application is designed to deliver a seamless user experience for browsing, searching, and purchasing books related to visual arts, design, and graphics. The platform integrates with STRAPI Cloud for content management and Firebase for authentication and order management, following best practices for modern web development.
+Visbook is a modern, responsive online bookstore developed with **React 19 and TypeScript** to showcase and sell visual graphics books. The application is designed to deliver a seamless user experience for browsing, searching, and purchasing books related to visual arts, design, and graphics. The platform integrates with STRAPI Cloud for content management and Firebase for authentication and order management, following best practices for modern web development with full type safety.
 
 ## 2. Features
 - Provides user authentication (Sign Up/Sign In with email/password or Google) using Firebase.
@@ -11,9 +11,11 @@ Visbook is a modern, responsive online bookstore developed to showcase and sell 
 - Implements a responsive navigation menu and layout for all devices.
 - Supports admin management of book data via STRAPI Cloud.
 - Simulates a secure payment workflow for demonstration purposes (no real payment processing).
+- **Full TypeScript support** with comprehensive type safety and developer tooling.
 
 ## 3. Technologies Used
-- React (Vite)
+- React 19 (Vite)
+- **TypeScript 5.x**
 - React Router
 - STRAPI Cloud (Headless CMS, PostgreSQL)
 - Firebase Authentication (Email/Password & Google)
@@ -23,133 +25,205 @@ Visbook is a modern, responsive online bookstore developed to showcase and sell 
 - Render (deployment)
 
 ## 4. Vite Configuration Notes
-- The Vite config (`vite.config.js`) is set up for deployment on Render:
+- The Vite config (`vite.config.ts`) is set up for deployment on Render:
   - Uses environment variables for API URLs.
   - Sets `build.chunkSizeWarningLimit` to 1000 kB to reduce chunk size warnings.
   - The `start` script runs: `vite preview --port $PORT --host` for production compatibility.
   - The `preview.allowedHosts` option includes your Render domain (e.g., `visbook.onrender.com`) to allow external access in production.
+  - TypeScript compilation is integrated into the build process for type checking.
 
 ## 5. Project & Code Structure
 ```
-visbook_strapi/
-├── public/                                   # Static files served directly by the web server
-│   ├── assets/                               # Static assets (images, icons, etc.)
-│   │   └── images/                           # Image assets for the site
-│   │       ├── vblogo.png                    # Main Visbook logo
-│   │       ├── visbook-about.jpg             # About page banner image
-│   │       ├── visbook-banner.jpg            # Homepage or general banner image
-│   │       └── icons/                        # Icon images used throughout the UI
-│   │           ├── book-icon.png             # Icon for books section
-│   │           ├── cart-icon.png             # Shopping cart icon
-│   │           ├── contact-icon.png          # Contact page icon
-│   │           ├── home-icon.png             # Home navigation icon
-│   │           ├── signin-icon.png           # Sign-in button/icon
-│   │           ├── signup-icon.png           # Sign-up button/icon
-│   │           ├── about-icon.png            # About page icon
-│   │           └── info-icon.png             # Info/help icon
-│   └── visbook.png                           # Additional Visbook logo or favicon
-├── src/                                      # Main application source code
-│   ├── App.jsx                               # Main React component, sets up routing and layout
-│   ├── App.css                               # Global styles for the app
-│   ├── firebase.js                           # Firebase configuration and initialization
-│   ├── main.jsx                              # Entry point for React app (renders <App />)
-│   ├── components/                           # Reusable UI components
-│   │   ├── Navbar/                           # Navigation bar component
-│   │   │   ├── Navbar.jsx                    # Navbar React component
-│   │   │   └── Navbar.css                    # Styles for Navbar
-│   │   ├── Footer/                           # Footer component
-│   │   │   ├── Footer.jsx                    # Footer React component
-│   │   │   └── Footer.css                    # Styles for Footer
-│   │   ├── Modal/                            # Modal dialog component
-│   │   │   ├── Modal.jsx                     # Modal React component
-│   │   │   └── Modal.css                     # Styles for Modal
-│   ├── context/                              # React context providers
-│   │   └── AuthContext.jsx                   # Authentication context for managing user state
-│   └── pages/                                # Page-level React components (each subfolder = route)
-│       ├── Home/                             # Homepage
-│       │   ├── Home.jsx                      # Home page component
-│       │   └── Home.css                      # Styles for Home page
-│       ├── Books/                            # Books-related pages
-│       │   ├── Books.jsx                     # Books listing page
-│       │   ├── Books.css                     # Styles for Books listing
-│       │   ├── BookDetail.jsx                # Book detail view component
-│       │   ├── BookDetail.css                # Styles for Book detail view
-│       │   ├── NewBooks.jsx                  # New books listing component
-│       │   └── NewBooks.css                  # Styles for new books listing
-│       ├── About/                            # About page
-│       │   ├── About.jsx                     # About page component
-│       │   └── About.css                     # Styles for About page
-│       ├── Contact/                          # Contact page
-│       │   ├── Contact.jsx                   # Contact page component
-│       │   └── Contact.css                   # Styles for Contact page
-│       ├── Cart/                             # Shopping cart page
-│       │   ├── Cart.jsx                      # Cart page component
-│       │   └── Cart.css                      # Styles for Cart page
-│       ├── Account/                          # User account management pages
-│       │   ├── AccountSettings.jsx           # Account settings component
-│       │   └── AccountSettings.css           # Styles for account settings
-│       ├── OrderHistory/                     # User order history page
-│       │   ├── OrderHistory.jsx              # Order history component
-│       │   └── OrderHistory.css              # Styles for order history
-│       ├── Payment/                          # Payment workflow pages
-│       │   ├── Payment.jsx                   # Payment page component
-│       │   ├── Payment.css                   # Styles for payment page
-│       │   ├── PaymentCompleted.jsx          # Payment completion confirmation component
-│       │   └── PaymentCompleted.css          # Styles for payment completion
-│       ├── SignIn/                           # Sign-in page
-│       │   ├── SignIn.jsx                    # Sign-in component
-│       │   └── SignIn.css                    # Styles for sign-in
-│       ├── SignUp/                           # Sign-up page
-│       │   ├── SignUp.jsx                    # Sign-up component
-│       │   └── SignUp.css                    # Styles for sign-up
-├── .env                                      # Environment variables (API keys, secrets; not tracked by git)
-├── package.json                              # Project metadata and dependencies
-├── vite.config.js                            # Vite build and dev server configuration
-├── eslint.config.js                          # ESLint configuration for code linting
-└── README.md                                 # Project documentation (this file)
+visbook_strapi_ts/
+├── public/
+│   ├── assets/
+│   │   └── images/
+│   │       ├── vblogo.png
+│   │       ├── visbook-about.jpg
+│   │       ├── visbook-banner.jpg
+│   │       └── icons/
+│   │           ├── book-icon.png
+│   │           ├── cart-icon.png
+│   │           ├── contact-icon.png
+│   │           ├── home-icon.png
+│   │           ├── signin-icon.png
+│   │           ├── signup-icon.png
+│   │           ├── about-icon.png
+│   │           └── info-icon.png
+│   └── visbook.png
+├── src/
+│   ├── App.tsx
+│   ├── App.css
+│   ├── firebase.ts
+│   ├── main.tsx
+│   ├── types.ts              # TypeScript type definitions
+│   ├── vite-env.d.ts         # Vite environment variable types
+│   ├── components/
+│   │   ├── Navbar/
+│   │   │   ├── Navbar.tsx    # Contains all cart counter logic with TypeScript
+│   │   │   └── Navbar.css
+│   │   ├── Footer/
+│   │   │   ├── Footer.tsx
+│   │   │   └── Footer.css
+│   │   ├── Modal/
+│   │   │   ├── Modal.tsx
+│   │   │   └── Modal.css
+│   ├── context/
+│   │   └── AuthContext.tsx   # Fully typed authentication context
+│   └── pages/
+│       ├── Home/
+│       │   ├── Home.tsx
+│       │   └── Home.css
+│       ├── Books/
+│       │   ├── Books.tsx
+│       │   ├── Books.css
+│       │   ├── BookDetail.tsx
+│       │   ├── BookDetail.css
+│       │   ├── NewBooks.tsx
+│       │   └── NewBooks.css
+│       ├── About/
+│       │   ├── About.tsx
+│       │   └── About.css
+│       ├── Contact/
+│       │   ├── Contact.tsx
+│       │   └── Contact.css
+│       ├── Cart/
+│       │   ├── Cart.tsx       # Cart logic with TypeScript types
+│       │   └── Cart.css
+│       ├── Account/
+│       │   ├── AccountSettings.tsx
+│       │   └── AccountSettings.css
+│       ├── Dashboard/
+│       │   ├── YourAccount.tsx
+│       │   └── YourAccount.css
+│       ├── OrderHistory/
+│       │   ├── OrderHistory.tsx
+│       │   └── OrderHistory.css
+│       ├── Payment/
+│       │   ├── Payment.tsx
+│       │   ├── Payment.css
+│       │   ├── PaymentCompleted.tsx
+│       │   └── PaymentCompleted.css
+│       ├── SignIn/
+│       │   ├── SignIn.tsx
+│       │   └── SignIn.css
+│       ├── SignUp/
+│       │   ├── SignUp.tsx
+│       │   └── SignUp.css
+├── .env
+├── package.json
+├── tsconfig.json             # TypeScript configuration
+├── tsconfig.node.json        # TypeScript config for Node tools
+├── vite.config.ts            # Vite config in TypeScript
+├── eslint.config.mjs         # ESLint configuration
+└── README.md
 ```
+
+**Recent TypeScript Conversion:**
+- Entire codebase migrated from JavaScript to TypeScript for enhanced type safety
+- All `.jsx` files converted to `.tsx` with proper type annotations
+- Centralized type definitions in `src/types.ts` for `Book`, `CartItem`, `Order`, `UserProfile`, and `Address`
+- Environment variables properly typed in `vite-env.d.ts`
+- Full type coverage in authentication context and all components
+- ESLint configuration updated to support TypeScript files
+
 ## 6. Key Files and Folders
 
-- **src/**  
-  Main source code for the frontend application.
+**src/**  
+  Main source code for the frontend application (TypeScript).
+  - **types.ts**  
+    Centralized TypeScript type definitions for the entire application, including:
+    - `Book`: Book data structure with all fields
+    - `CartItem`: Shopping cart item with quantity
+    - `Order`: Order history structure
+    - `UserProfile`: User profile information
+    - `Address`: Shipping/billing address structure
+  - **vite-env.d.ts**  
+    TypeScript definitions for Vite environment variables (API keys, URLs, etc.)
   - **components/**  
-    Contains reusable UI components.  
+    Contains reusable UI components (all TypeScript).  
     - **Navbar/**  
-      - `Navbar.jsx`: The navigation bar React component.  
+      - `Navbar.tsx`: The navigation bar React component with full type safety.  
       - `Navbar.css`: Styles for the navigation bar.
+    - **Footer/**
+      - `Footer.tsx`: Footer component.
+      - `Footer.css`: Styles for Footer.
+    - **Modal/**
+      - `Modal.tsx`: Modal dialog component with typed props.
+      - `Modal.css`: Styles for Modal.
   - **pages/**  
-    Contains page-level React components.
+    Contains page-level React components (all TypeScript).
+    - **About/**
+      - `About.tsx`: About page component.
+      - `About.css`: Styles for About page.
+    - **Account/**
+      - `AccountSettings.tsx`: Account settings page with typed form handling.
+      - `AccountSettings.css`: Styles for account settings.
     - **Books/**  
-      - `Books.jsx`: Books listing page.  
-      - `NewBooks.jsx`: New books page.  
-      - `NewBooks.css`: Styles for new books page.  
-      - `BookDetail.jsx`: Book detail page.
+      - `Books.tsx`: Books listing page with typed book data.  
+      - `Books.css`: Styles for Books listing.  
+      - `BookDetail.tsx`: Book detail page with type-safe routing.
+      - `BookDetail.css`: Styles for Book detail page.
+      - `NewBooks.tsx`: New books page with carousel functionality.  
+      - `NewBooks.css`: Styles for new books page.
+    - **Cart/**
+      - `Cart.tsx`: Shopping cart page with typed cart operations.
+      - `Cart.css`: Styles for Cart page.
+    - **Dashboard/**
+      - `YourAccount.tsx`: User dashboard main page.
+      - `YourAccount.css`: Styles for user dashboard.
     - **OrderHistory/**  
-      - `OrderHistory.jsx`: User's order history page.  
+      - `OrderHistory.tsx`: User's order history page with typed order data.  
       - `OrderHistory.css`: Styles for order history page.
+    - **Payment/**
+      - `Payment.tsx`: Payment page.
+      - `Payment.css`: Styles for payment page.
+      - `PaymentCompleted.tsx`: Payment completion confirmation.
+      - `PaymentCompleted.css`: Styles for payment completion.
+    - **SignIn/**
+      - `SignIn.tsx`: Sign-in page with typed authentication.
+      - `SignIn.css`: Styles for sign-in.
+    - **SignUp/**
+      - `SignUp.tsx`: Sign-up page with typed form validation.
+      - `SignUp.css`: Styles for sign-up.
   - **assets/**  
     Images, icons, and other static files.
   - **context/**  
-    React context providers (e.g., authentication).
-  - **App.jsx**  
-    Main application component, sets up routing and layout.
-  - **index.js**  
-    Entry point for the React application.
+    React context providers with full TypeScript support.
+    - `AuthContext.tsx`: Authentication context with typed user profile, Firebase User, and auth methods.
+  - **App.tsx**  
+    Main application component, sets up routing and layout (TypeScript).
+  - **main.tsx**  
+    Entry point for the React application (TypeScript).
+  - **firebase.ts**  
+    Firebase configuration and initialization (TypeScript).
 
-- **public/**  
+**public/**  
   Static files served directly (e.g., index.html, favicon).
 
-- **.env**  
+**.env**  
   Environment variables (API keys, secrets).  
   **Note:** This file is ignored by git for security.
 
-- **.gitignore**  
+**.gitignore**  
   Specifies files and folders to be ignored by git (e.g., node_modules, .env).
 
-- **package.json**  
-  Lists project dependencies, scripts, and metadata.
+**package.json**  
+  Lists project dependencies, scripts, and metadata. Includes TypeScript and type definition packages.
 
-- **README.md**  
+**tsconfig.json**  
+  TypeScript compiler configuration for the project. Configured for React 19 with strict type checking.
+
+**tsconfig.node.json**  
+  TypeScript configuration for build tools and Node.js scripts (Vite config, etc.).
+
+**vite.config.ts**  
+  Vite build tool configuration in TypeScript.
+
+**eslint.config.mjs**  
+  ESLint configuration supporting both JavaScript and TypeScript files.
+
+**README.md**  
   Project overview and setup instructions.
 
 ---
@@ -172,12 +246,27 @@ visbook_strapi/
    ```
 2. **Start the development server:**  
    ```sh
-   npm start
+   npm run dev
    ```
-3. **Build for production:**  
+3. **Type checking (without build):**  
+   ```sh
+   npm run typecheck
+   ```
+4. **Build for production:**  
    ```sh
    npm run build
    ```
+   This runs TypeScript type checking followed by Vite production build.
+5. **Preview production build:**  
+   ```sh
+   npm run preview
+   ```
+
+**TypeScript Features:**
+- IntelliSense and autocomplete in supported editors (VS Code recommended)
+- Compile-time type checking catches errors before runtime
+- Better refactoring support with type-safe renames
+- Self-documenting code with explicit type annotations
 
 ---
 
@@ -190,23 +279,95 @@ visbook_strapi/
 ---
 
 ## 10. Software Component Roles
-- **Navbar, Footer, Modal:** These are reusable UI components for navigation, layout, and dialogs.
-- **Pages:** Each folder in `src/pages` corresponds to a route/view (e.g., Home, Books, Cart).
-- **firebase.js:** Handles Firebase and Firestore configuration.
-- **context/AuthContext.jsx:** Manages user authentication state using React Context.
+- **Navbar, Footer, Modal:** These are reusable UI components for navigation, layout, and dialogs (TypeScript).
+- **Pages:** Each folder in `src/pages` corresponds to a route/view (e.g., Home, Books, Cart) with full type safety.
+- **firebase.ts:** Handles Firebase and Firestore configuration (TypeScript).
+- **context/AuthContext.tsx:** Manages user authentication state using React Context with comprehensive TypeScript types for user profiles and auth methods.
+- **types.ts:** Centralized type definitions shared across the application.
 - **STRAPI Cloud:** Provides book data management (CRUD) and media asset hosting.
 
-## 11. Logical Architecture (Visual)
-```
-[User] ⇄ [React Frontend] ⇄ [STRAPI Cloud API] ⇄ [PostgreSQL]
-                   ⇅ [Firebase Auth]
-                   ⇅ [Firestore DB]
+## 11. TypeScript Architecture
+
+### 11.1. Type System
+The application uses a comprehensive type system defined in `src/types.ts`:
+
+```typescript
+// Core data types
+interface Book {
+  id: number | string;
+  title: string;
+  author: string;
+  price: number;
+  price_cad?: number;
+  description?: string;
+  // ... additional fields
+}
+
+interface CartItem extends Book {
+  quantity: number;
+}
+
+interface Order {
+  id: string;
+  items: CartItem[];
+  total: number;
+  createdAt: Date | Timestamp;
+  // ... additional fields
+}
+
+interface UserProfile {
+  displayName: string | null;
+  email: string | null;
+  photoURL?: string | null;
+  homeAddress?: string;
+}
 ```
 
-## 12. Installation and Dependencies
+### 11.2. Environment Variables
+All environment variables are typed in `src/vite-env.d.ts`:
+```typescript
+interface ImportMetaEnv {
+  readonly VITE_API_URL: string
+  readonly VITE_STRAPI_URL: string
+  readonly VITE_STRAPI_MEDIA_URL: string
+  readonly VITE_FIREBASE_API_KEY: string
+  // ... additional variables
+}
+```
+
+### 11.3. Component Props
+All React components use TypeScript interfaces for props:
+```typescript
+interface ModalProps {
+  open: boolean;
+  onClose: () => void;
+  children: ReactNode;
+}
+```
+
+### 11.4. Firebase Integration
+Firebase types are imported from the official Firebase SDK and integrated with custom types for seamless type safety across authentication and database operations.
+
+## 12. Logical Architecture (Visual)
+```
+[User] ⇄ [React 19 + TypeScript Frontend] ⇄ [STRAPI Cloud API] ⇄ [PostgreSQL]
+                   ⇅ [Firebase Auth]
+                   ⇅ [Firestore DB]
+                   
+Type Safety Flow:
+[TypeScript Compiler] → [Type Checking] → [Build (Vite)] → [Production Bundle]
+```
+
+## 13. Installation and Dependencies
 - Clone the repository from source control.
-- Run `npm install` in the project root to install all dependencies.
+- Run `npm install` in the project root to install all dependencies, including:
+  - TypeScript and type definitions (@types/react, @types/react-dom, @types/node)
+  - React 19 and React Router
+  - Firebase SDK
+  - Vite build tool
+  - ESLint for code quality
 - Refer to `package.json` for a complete list of required packages.
+- TypeScript compiler and type checking tools are automatically configured.
 
 ## 13. STRAPI Cloud Setup & Book Data Management
 
@@ -234,16 +395,21 @@ To set up the STRAPI Cloud backend, the developer should:
 - Save the updated permissions.
 
 ### 13.5. Fetch Book Data from React Frontend
-- The frontend fetches book data from the Strapi REST API, enabling real-time updates and centralized content management. Example code for fetching all book entries in a React component:
-  ```js
+- The frontend fetches book data from the Strapi REST API with full TypeScript type safety, enabling real-time updates and centralized content management. Example code for fetching all book entries in a React component:
+  ```typescript
+  import { Book } from '../types';
+  
   useEffect(() => {
-    fetch('https://your-project-name.cloud.strapi.io/api/books?populate=*')
-      .then(res => res.json())
-      .then(data => setBooks(data.data));
+    const fetchBooks = async () => {
+      const res = await fetch(`${STRAPI_URL}/api/books?pagination[page]=1&pagination[pageSize]=30`);
+      const data = await res.json();
+      setBooks(data.data as Book[]);
+    };
+    fetchBooks();
   }, []);
   ```
-- Each book entry is accessed as an object in the `data` array returned by the API. To display book details, map over the `books` state and access each field via `book.attributes`. Use the filename or cover image URL from the Media Library for images.
-- This approach ensures the frontend always displays the latest book data managed in Strapi Cloud, without redeployment or static file updates.
+- Each book entry is typed according to the `Book` interface defined in `src/types.ts`. TypeScript ensures all book properties are correctly accessed and provides autocomplete for book fields.
+- This approach ensures the frontend always displays the latest book data managed in Strapi Cloud, with compile-time type checking to catch errors early.
 
 ### 13.6. STRAPI Cloud Media Management
 - All uploaded images are managed and served by STRAPI Cloud. The API response for each book includes a URL to the cover image, which can be used directly in React components.
@@ -275,57 +441,58 @@ To set up Firebase, the developer should:
   ```sh
   npm install firebase
   ```
-- Import and initialize Firebase in `src/firebase.js`:
-  ```js
+- Import and initialize Firebase in `src/firebase.ts` (TypeScript):
+  ```typescript
   import { initializeApp } from 'firebase/app';
   import { getAuth } from 'firebase/auth';
+  
   const firebaseConfig = { /* your config here */ };
   const app = initializeApp(firebaseConfig);
   export const auth = getAuth(app);
   ```
 
 ### 14.4. Authentication Usage in Code
-- Use Firebase Auth methods for sign-up, sign-in, and sign-out in React components. Example for email/password sign-in:
-  ```js
-  import { signInWithEmailAndPassword } from 'firebase/auth';
+- Use Firebase Auth methods with TypeScript for sign-up, sign-in, and sign-out in React components. Example for email/password sign-in:
+  ```typescript
+  import { signInWithEmailAndPassword, UserCredential } from 'firebase/auth';
   import { auth } from '../firebase';
-  // ...
-  signInWithEmailAndPassword(auth, email, password)
-    .then((userCredential) => {
-      // Signed in
+  
+  const handleSignIn = async (email: string, password: string) => {
+    try {
+      const userCredential: UserCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       // Save user info to context or state
-    })
-    .catch((error) => {
-      // Handle errors
-    });
+    } catch (error) {
+      // Handle errors with proper typing
+      console.error(error);
+    }
+  };
   ```
 - For Google sign-in:
-  ```js
+  ```typescript
   import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+  
   const provider = new GoogleAuthProvider();
-  signInWithPopup(auth, provider)
-    .then((result) => {
-      // Google user info in result.user
-    })
-    .catch((error) => {
-      // Handle errors
-    });
+  const result = await signInWithPopup(auth, provider);
+  // Google user info in result.user
   ```
 
 ### 14.5. User Profile Management
-- Firebase Auth manages user accounts and securely stores user profile information (email, display name, etc.). The current user can be accessed anywhere in the app using:
-  ```js
-  import { onAuthStateChanged } from 'firebase/auth';
-  onAuthStateChanged(auth, (user) => {
+- Firebase Auth manages user accounts and securely stores user profile information (email, display name, etc.). The current user can be accessed anywhere in the app using TypeScript:
+  ```typescript
+  import { onAuthStateChanged, User } from 'firebase/auth';
+  import { auth } from '../firebase';
+  
+  onAuthStateChanged(auth, (user: User | null) => {
     if (user) {
-      // User is signed in
+      // User is signed in - TypeScript knows user properties
+      console.log(user.email, user.displayName);
     } else {
       // User is signed out
     }
   });
   ```
-- Store user info in React context (e.g., `AuthContext.jsx`) for global access.
+- Store user info in React context (e.g., `AuthContext.tsx`) with proper TypeScript interfaces for global access and type safety.
 
 ### 14.6. Security and Best Practices
 - Sensitive Firebase config or API keys should never be exposed in public repositories.
@@ -334,13 +501,28 @@ To set up Firebase, the developer should:
 
 ## 15. Firestore Database Setup & Order History
 - Enable Firestore Database in the Firebase console.
-- Use Firestore in code to save and retrieve order history. Example:
-  ```js
-  import { getFirestore, collection, addDoc, getDocs } from 'firebase/firestore';
+- Use Firestore in TypeScript code to save and retrieve order history with proper types. Example:
+  ```typescript
+  import { getFirestore, collection, addDoc, getDocs, Timestamp } from 'firebase/firestore';
+  import { Order } from './types';
+  
+  const db = getFirestore();
+  
   // Save order
+  const orderData: Omit<Order, 'id'> = {
+    items: cartItems,
+    total: totalAmount,
+    createdAt: Timestamp.now(),
+    // ... other fields
+  };
   await addDoc(collection(db, 'orders'), orderData);
+  
   // Retrieve orders
   const querySnapshot = await getDocs(collection(db, 'orders'));
+  const orders: Order[] = querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  } as Order));
   ```
 
 ## 16. Usage of the Website
