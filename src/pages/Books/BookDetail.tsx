@@ -13,7 +13,7 @@ export default function BookDetail() {
     const fetchBook = async () => {
       try {
         const STRAPI_URL = import.meta.env.VITE_STRAPI_URL;
-        const res = await fetch(`${STRAPI_URL}/api/books?pagination[page]=1&pagination[pageSize]=30`);
+        const res = await fetch(`${STRAPI_URL}/api/books?pagination[limit]=100`); 
         // const res = await fetch("http://localhost:1337/api/books?populate=*");
         if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
         const data = await res.json();
