@@ -14,6 +14,7 @@ export default function Books() {
   const [error, setError] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalBook, setModalBook] = useState<Book | null>(null);
+  const [loadingMsg, setLoadingMsg] = useState<string>("Please wait, loading books…");
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const db = getFirestore(app);
@@ -50,7 +51,7 @@ export default function Books() {
           setLoading(false);
           return;
         } catch (err) {
-          console.warn(`Books fetch attempt ${attempt + 1} failed:`, err.message);
+          console.warn(`Books fetch attempt ${attempt + 1} failed:`, (err as Error).message);
           if (attempt < RETRY_ATTEMPTS) {
             setLoadingMsg(
               `The book server is warming up, please wait… (attempt ${attempt + 2}/${RETRY_ATTEMPTS + 1})`
@@ -107,7 +108,7 @@ export default function Books() {
       <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '71.55vh' }}>
         <div className="spinner" style={{ marginBottom: '1.2rem' }}></div>
         <div style={{ color: '#46d0ef', fontSize: '1.12rem', fontWeight: 500, letterSpacing: '0.01em', textAlign: 'center' }}>
-          Please wait, loading books…
+          {loadingMsg}
         </div>
       </main>
     );
@@ -134,6 +135,7 @@ export default function Books() {
                     src={cover}
                     alt={book.title || "Book cover"}
                     onClick={() => handleBookClick(book.id)}
+                    loading="lazy"
                     style={{
                       width: 200,
                       height: 300,
@@ -185,7 +187,12 @@ export default function Books() {
             </div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, width: '100%', marginBottom: 10 }}>
               {modalBook.filename && (
-                <img src={`${STRAPI_MEDIA_URL}/${modalBook.filename}`} alt={modalBook.title} style={{ width: 90, height: 120, objectFit: 'cover', borderRadius: 4, boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }} />
+                <img 
+                  src={`${STRAPI_MEDIA_URL}/${modalBook.filename}`} 
+                  alt={modalBook.title} 
+                  loading="lazy"
+                  style={{ width: 90, height: 120, objectFit: 'cover', borderRadius: 4, boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }} 
+                />
               )}
               <div style={{ fontWeight: 700, fontSize: '1.08rem', textAlign: 'left', maxWidth: 200 }}>{modalBook.title}</div>
             </div>
