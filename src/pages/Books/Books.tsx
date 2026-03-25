@@ -23,9 +23,9 @@ export default function Books() {
   const STRAPI_URL = import.meta.env.VITE_STRAPI_URL;
   const STRAPI_MEDIA_URL = import.meta.env.VITE_STRAPI_MEDIA_URL;
 
-  const RETRY_ATTEMPTS = 5;
-  const RETRY_DELAY_MS = 8000;
-  const FETCH_TIMEOUT_MS = 15000;
+  const RETRY_ATTEMPTS = 2;      // 3 total attempts, ~30 s worst-case
+  const RETRY_DELAY_MS = 3000;
+  const FETCH_TIMEOUT_MS = 10000;
 
   useEffect(() => {
     const fetchWithTimeout = (url) => {
@@ -53,9 +53,6 @@ export default function Books() {
         } catch (err) {
           console.warn(`Books fetch attempt ${attempt + 1} failed:`, (err as Error).message);
           if (attempt < RETRY_ATTEMPTS) {
-            setLoadingMsg(
-              `The book server is warming up, please wait… (attempt ${attempt + 2}/${RETRY_ATTEMPTS + 1})`
-            );
             await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
           } else {
             console.error("All fetch attempts failed.");
