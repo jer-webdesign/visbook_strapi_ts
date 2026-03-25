@@ -22,21 +22,47 @@ export default function Books() {
   const STRAPI_URL = import.meta.env.VITE_STRAPI_URL;
   const STRAPI_MEDIA_URL = import.meta.env.VITE_STRAPI_MEDIA_URL;
 
+  const RETRY_ATTEMPTS = 5;
+  const RETRY_DELAY_MS = 8000;
+  const FETCH_TIMEOUT_MS = 15000;
+
   useEffect(() => {
+    const fetchWithTimeout = (url) => {
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+      return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(id));
+    };
+
     const fetchBooks = async () => {
-      try {
-        setLoading(true);
-        const res = await fetch(`${STRAPI_URL}/api/books?pagination[limit]=100`); 
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-        const data = await res.json();
-        console.log("Books API Response:", data);
-        setBooks(data.data || []);
-      } catch (err) {
-        console.error("Error fetching books:", err);
-        setError(err instanceof Error ? err.message : "Unknown error");
-        setBooks([]);
-      } finally {
-        setLoading(false);
+      setLoading(true);
+      setLoadingMsg("Please wait, loading books…");
+      setError(null);
+
+      for (let attempt = 0; attempt <= RETRY_ATTEMPTS; attempt++) {
+        try {
+          const res = await fetchWithTimeout(
+            `${STRAPI_URL}/api/books?populate=*&pagination[limit]=30`
+          );
+          if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+          const data = await res.json();
+          console.log("Books API Response:", data);
+          setBooks(data.data || []);
+          setLoading(false);
+          return;
+        } catch (err) {
+          console.warn(`Books fetch attempt ${attempt + 1} failed:`, err.message);
+          if (attempt < RETRY_ATTEMPTS) {
+            setLoadingMsg(
+              `The book server is warming up, please wait… (attempt ${attempt + 2}/${RETRY_ATTEMPTS + 1})`
+            );
+            await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
+          } else {
+            console.error("All fetch attempts failed.");
+            setError("The server took too long to respond. Please refresh the page to try again.");
+            setBooks([]);
+            setLoading(false);
+          }
+        }
       }
     };
 
