@@ -18,11 +18,12 @@ export default function NewBooks() {
   const [error, setError] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalBook, setModalBook] = useState<Book | null>(null);
+  const [loadingMsg, setLoadingMsg] = useState<string>("Please wait, loading books…");  
 
   const STRAPI_URL = import.meta.env.VITE_STRAPI_URL;
   const STRAPI_MEDIA_URL = import.meta.env.VITE_STRAPI_MEDIA_URL;
 
-  const RETRY_ATTEMPTS = 5;
+const RETRY_ATTEMPTS = 5;
   const RETRY_DELAY_MS = 8000;
   const FETCH_TIMEOUT_MS = 15000;
 
@@ -54,7 +55,7 @@ export default function NewBooks() {
           setLoading(false);
           return;
         } catch (err) {
-          console.warn(`NewBooks fetch attempt ${attempt + 1} failed:`, err.message);
+          console.warn(`NewBooks fetch attempt ${attempt + 1} failed:`, (err as Error).message);
           if (attempt < RETRY_ATTEMPTS) {
             setLoadingMsg(
               `The book server is warming up, please wait… (attempt ${attempt + 2}/${RETRY_ATTEMPTS + 1})`
@@ -71,7 +72,7 @@ export default function NewBooks() {
     };
 
     fetchBooks();
-  }, [STRAPI_URL]);  
+  }, [STRAPI_URL]);    
 
   const handleBookClick = (bookID: number | string) => {
     navigate(`/books/${bookID}`);
