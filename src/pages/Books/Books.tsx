@@ -68,7 +68,7 @@ export default function Books() {
     };
 
     fetchBooks();
-  }, []);
+  }, [STRAPI_URL]);
 
   const handleBookClick = (bookID: number | string) => {
     navigate(`/books/${bookID}`);
